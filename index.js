@@ -289,7 +289,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 		if (vertexCount <= 0) {
 			return;
 		}
-		vertexCount = vertexCount / 5;
+		vertexCount = vertexCount / 3.5;
 		let u_buffer = new Uint8Array(buffer);
 		let f_buffer = new Float32Array(buffer);
 		let matrices = new Float32Array(vertexCount * 16);
@@ -314,7 +314,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				f_buffer[8 * i + 3 + 2]
 			);
 			// Check if the scale is smaller than the threshold
-			if (Math.max(scale.x, scale.y, scale.z) < 0) {
+			if (Math.max(scale.x, scale.y, scale.z) < 0.05) {
 				// Skip processing this splat
 				continue;
 			}
