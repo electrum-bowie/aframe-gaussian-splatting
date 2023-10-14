@@ -158,21 +158,8 @@ AFRAME.registerComponent("gaussian_splatting", {
 			covAndColorTexture.needsUpdate = true;
 
 			let splatIndexArray = new Uint32Array(vertexCount);
-			const visibleSplatIndexes = new Uint32Array(splatIndexArray.length); // Create an array to store visible splats
-			let visibleSplatCount = 0;
-
-			for (let i = 0; i < splatIndexArray.length; i++) {
-				const opacity = covAndColorData_uint8[i * 4 + 3] / 255.0;
-				if (opacity > 0.80) { // Modify this condition based on your desired opacity threshold
-					visibleSplatIndexes[visibleSplatCount] = splatIndexArray[i];
-					visibleSplatCount++;
-				}
-			}
-
-			// Create a new buffer attribute for the visible splats
-			const visibleSplatIndexesAttr = new THREE.InstancedBufferAttribute(visibleSplatIndexes.slice(0, visibleSplatCount), 1, false);
-			visibleSplatIndexesAttr.setUsage(THREE.DynamicDrawUsage);
-
+			const splatIndexes = new THREE.InstancedBufferAttribute(splatIndexArray, 1, false);
+			splatIndexes.setUsage(THREE.DynamicDrawUsage);
 			const baseGeometry = new THREE.BufferGeometry();
 			const positionsArray = new Float32Array(6 * 3);
 			const positions = new THREE.BufferAttribute(positionsArray, 3);
@@ -186,7 +173,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 			positions.needsUpdate = true;
 
 			const geometry = new THREE.InstancedBufferGeometry().copy(baseGeometry);
-			geometry.setAttribute('splatIndex', visibleSplatIndexesAttr);
+			geometry.setAttribute('splatIndex', splatIndexes);
 			geometry.instanceCount = vertexCount;
 
 			const material = new THREE.ShaderMaterial( {
@@ -566,7 +553,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				Math.exp(attrs.scale_0) *
 				Math.exp(attrs.scale_1) *
 				Math.exp(attrs.scale_2);
-			const opacity = 1 / (1 + Math.exp(-attrs.opacity));
+			const opacity = Math.pow(1 / (1 + Math.exp(-attrs.opacity)), 3);
 			sizeList[row] = size * opacity;
 		}
 		console.timeEnd("calculate importance");
