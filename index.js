@@ -347,7 +347,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 						float B = exp(A) * vColor.a;
 						// if ( B < getAlphaHashThreshold( gl_FragCoord.xyz + vec3(vPosition, 1)) ) discard;
 						// if(B < rand(gl_FragCoord.xy + vPosition)) discard;
-						float threshold = 0.5; // Adjust this value as needed
+						float threshold = 0.8; // Adjust this value as needed
 
                         if (B < threshold) {
                             // Remove splats with opacity below the threshold
