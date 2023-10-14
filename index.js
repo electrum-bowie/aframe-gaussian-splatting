@@ -90,10 +90,24 @@ AFRAME.registerComponent("gaussian_splatting", {
 				const covAndColorData = new Uint32Array(4096 * 4096 * 4);
 				const covAndColorData_uint8 = new Uint8Array(covAndColorData.buffer);
 				const covAndColorData_int16 = new Int16Array(covAndColorData.buffer);
-				for (let i = 0; i < vertexCount; i++) {
 
-					// Instead of making splats invisible, remove them based on opacity
-					if (attrs.opacity < 0.5) {
+				// Calculate the actual average scale
+				averageScale /= vertexCount;
+
+				// Set a threshold for removing splats (half of the average scale)
+				let scaleThreshold = averageScale / 2.0;
+
+				for (let i = 0; i < vertexCount; i++) {
+					// Calculate the scale of the current splat
+					let scaleValue = Math.sqrt(
+						scales[0] * scales[0] +
+						scales[1] * scales[1] +
+						scales[2] * scales[2]
+					);
+
+					// Update the average scale
+					averageScale += scaleValue;
+					if (scaleValue < scaleThreshold) {
 						continue; // Skip this splat
 					}
 					let quat = new THREE.Quaternion(
