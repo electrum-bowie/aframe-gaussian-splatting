@@ -288,7 +288,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 					in vec4 vColor;
 					in vec2 vPosition;
 
-					const float ALPHA_HASH_SCALE = 0.1; // Derived from trials only, and may be changed.
+					const float ALPHA_HASH_SCALE = 0.05; // Derived from trials only, and may be changed.
 
 					float hash2D( vec2 value ) {
 				
