@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="index.js"></script>
-  </head>
-  <body>
+    <script src="simple-fly.js"></script> <!-- Include your fly component script -->
+</head>
+<body>
     <a-scene renderer="antialias: false" stats>
-      <a-entity position="0 1.6 -2.0" animation="property: rotation; to: 0 360 0; dur: 10000; easing: linear; loop: true">
-        <a-sphere position="0 0 0.5" radius="0.5" color="#EF2D5E"></a-sphere>
-        <a-sphere position="0 0 -0.5" radius="0.5" color="#EF2D5E"></a-sphere>
-      </a-entity>
-      <a-entity gaussian_splatting="src: https://huggingface.co/cakewalk/splat-data/resolve/main/garden.splat;" rotation="0 0 0" position="0 1.5 -2"></a-entity>
+        <a-entity oculus-touch-controls="hand: right"></a-entity>
+        <a-entity oculus-touch-controls="hand: left"></a-entity>
+        <a-entity gaussian_splatting="src: https://huggingface.co/datasets/wdfsa/ply/resolve/main/gaussian_splatting_point_cloud.ply;" rotation="0 0 0" position="0 1.5 -2"></a-entity>
+        <a-entity oculus-touch-controls="hand: right" simple-fly="speed: -0.005"></a-entity>
     </a-scene>
-  </body>
+</body>
 </html>
