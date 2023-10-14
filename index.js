@@ -100,18 +100,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				let scaleThreshold = averageScale / 2.0;
 
 				for (let i = 0; i < vertexCount; i++) {
-					// Calculate the scale of the current splat
-					let scaleValue = Math.sqrt(
-						scales[0] * scales[0] +
-						scales[1] * scales[1] +
-						scales[2] * scales[2]
-					);
 
-					// Update the average scale
-					averageScale += scaleValue;
-					if (scaleValue < scaleThreshold) {
-						continue; // Skip this splat
-					}
 					let quat = new THREE.Quaternion(
 						(u_buffer[32 * i + 28 + 1] - 128) / 128.0,
 						(u_buffer[32 * i + 28 + 2] - 128) / 128.0,
@@ -128,7 +117,14 @@ AFRAME.registerComponent("gaussian_splatting", {
 						f_buffer[8 * i + 3 + 1],
 						f_buffer[8 * i + 3 + 2]
 					);
+					// Calculate the scale of the current splat
+					let scaleValue = scale;
 
+					// Update the average scale
+					averageScale += scaleValue;
+					if (scaleValue < scaleThreshold) {
+						continue; // Skip this splat
+					}
 					let mtx = new THREE.Matrix4();
 					mtx.makeRotationFromQuaternion(quat);
 					mtx.transpose();
