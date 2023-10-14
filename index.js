@@ -97,7 +97,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				averageScale /= vertexCount;
 
 				// Set a threshold for removing splats (half of the average scale)
-				let scaleThreshold = averageScale / 2.0;
+				let scaleThreshold = averageScale;
 
 				for (let i = 0; i < vertexCount; i++) {
 
