@@ -91,7 +91,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				const covAndColorData_uint8 = new Uint8Array(covAndColorData.buffer);
 				const covAndColorData_int16 = new Int16Array(covAndColorData.buffer);
 
-				let averageScale = 0.0;
+				let averageScale = 0;
 
 				// Calculate the actual average scale
 				averageScale /= vertexCount;
