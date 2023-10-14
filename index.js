@@ -91,6 +91,11 @@ AFRAME.registerComponent("gaussian_splatting", {
 				const covAndColorData_uint8 = new Uint8Array(covAndColorData.buffer);
 				const covAndColorData_int16 = new Int16Array(covAndColorData.buffer);
 				for (let i = 0; i < vertexCount; i++) {
+
+					// Instead of making splats invisible, remove them based on opacity
+					if (attrs.opacity < 0.5) {
+						continue; // Skip this splat
+					}
 					let quat = new THREE.Quaternion(
 						(u_buffer[32 * i + 28 + 1] - 128) / 128.0,
 						(u_buffer[32 * i + 28 + 2] - 128) / 128.0,
@@ -580,10 +585,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 		console.time("build buffer");
 		for (let j = 0; j < vertexCount; j++) {
 			row = sizeIndex[j];
-			// Instead of making splats invisible, remove them based on opacity
-			if (attrs.opacity < 0.5) {
-				continue; // Skip this splat
-			}
+			
 			const position = new Float32Array(buffer, j * rowLength, 3);
 			const scales = new Float32Array(buffer, j * rowLength + 4 * 3, 3);
 			const rgba = new Uint8ClampedArray(
