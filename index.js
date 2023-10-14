@@ -580,7 +580,10 @@ AFRAME.registerComponent("gaussian_splatting", {
 		console.time("build buffer");
 		for (let j = 0; j < vertexCount; j++) {
 			row = sizeIndex[j];
-
+			// Instead of making splats invisible, remove them based on opacity
+			if (attrs.opacity < 0.5) {
+				continue; // Skip this splat
+			}
 			const position = new Float32Array(buffer, j * rowLength, 3);
 			const scales = new Float32Array(buffer, j * rowLength + 4 * 3, 3);
 			const rgba = new Uint8ClampedArray(
