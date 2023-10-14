@@ -289,7 +289,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 		if (vertexCount <= 0) {
 			return;
 		}
-
+		vertexCount = vertexCount / 5;
 		let u_buffer = new Uint8Array(buffer);
 		let f_buffer = new Float32Array(buffer);
 		let matrices = new Float32Array(vertexCount * 16);
