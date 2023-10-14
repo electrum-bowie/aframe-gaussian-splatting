@@ -277,18 +277,81 @@ AFRAME.registerComponent("gaussian_splatting", {
 					in vec4 vColor;
 					in vec2 vPosition;
 
+					const float ALPHA_HASH_SCALE = 0.05; // Derived from trials only, and may be changed.
+
+					float hash2D( vec2 value ) {
+				
+						return fract( 1.0e4 * sin( 17.0 * value.x + 0.1 * value.y ) * ( 0.1 + abs( sin( 13.0 * value.y + value.x ) ) ) );
+				
+					}
+				
+					float hash3D( vec3 value ) {
+				
+						return hash2D( vec2( hash2D( value.xy ), value.z ) );
+				
+					}
+					
+					// This function is copied from Three.js
+					float getAlphaHashThreshold( vec3 position ) {
+				
+						// Find the discretized derivatives of our coordinates
+						float maxDeriv = max(
+							length( dFdx( position.xyz ) ),
+							length( dFdy( position.xyz ) )
+						);
+						float pixScale = 1.0 / ( ALPHA_HASH_SCALE * maxDeriv );
+				
+						// Find two nearest log-discretized noise scales
+						vec2 pixScales = vec2(
+							exp2( floor( log2( pixScale ) ) ),
+							exp2( ceil( log2( pixScale ) ) )
+						);
+				
+						// Compute alpha thresholds at our two noise scales
+						vec2 alpha = vec2(
+							hash3D( floor( pixScales.x * position.xyz ) ),
+							hash3D( floor( pixScales.y * position.xyz ) )
+						);
+				
+						// Factor to interpolate lerp with
+						float lerpFactor = fract( log2( pixScale ) );
+				
+						// Interpolate alpha threshold from noise at two scales
+						float x = ( 1.0 - lerpFactor ) * alpha.x + lerpFactor * alpha.y;
+				
+						// Pass into CDF to compute uniformly distrib threshold
+						float a = min( lerpFactor, 1.0 - lerpFactor );
+						vec3 cases = vec3(
+							x * x / ( 2.0 * a * ( 1.0 - a ) ),
+							( x - 0.5 * a ) / ( 1.0 - a ),
+							1.0 - ( ( 1.0 - x ) * ( 1.0 - x ) / ( 2.0 * a * ( 1.0 - a ) ) )
+						);
+				
+						// Find our final, uniformly distributed alpha threshold (ατ)
+						float threshold = ( x < ( 1.0 - a ) )
+							? ( ( x < a ) ? cases.x : cases.y )
+							: cases.z;
+				
+						// Avoids ατ == 0. Could also do ατ =1-ατ
+						return clamp( threshold , 1.0e-6, 1.0 );
+				
+					}
+
+					float rand(vec2 co){
+						return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+					}
+
 					void main () {
 						float A = -dot(vPosition, vPosition);
 						if (A < -4.0) discard;
 						float B = exp(A) * vColor.a;
-						gl_FragColor = vec4(vColor.rgb, B);
+						// if ( B < getAlphaHashThreshold( gl_FragCoord.xyz + vec3(vPosition, 1)) ) discard;
+						if(B < rand(gl_FragCoord.xy + vPosition)) discard;
+						gl_FragColor = vec4(vColor.rgb, 1);
 					}
 				`,
-				blending : THREE.CustomBlending,
-				blendSrcAlpha : THREE.OneFactor,
 				depthTest : true,
-				depthWrite: false,
-				transparent: true
+				depthWrite: false
 			} );
 
 			material.onBeforeRender = ((renderer, scene, camera, geometry, object, group) => {
