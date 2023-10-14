@@ -277,7 +277,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 					in vec4 vColor;
 					in vec2 vPosition;
 
-					const float ALPHA_HASH_SCALE = 0.05; // Derived from trials only, and may be changed.
+					const float ALPHA_HASH_SCALE = 0.35; // Derived from trials only, and may be changed.
 
 					float hash2D( vec2 value ) {
 				
@@ -346,7 +346,13 @@ AFRAME.registerComponent("gaussian_splatting", {
 						if (A < -4.0) discard;
 						float B = exp(A) * vColor.a;
 						// if ( B < getAlphaHashThreshold( gl_FragCoord.xyz + vec3(vPosition, 1)) ) discard;
-						if(B < rand(gl_FragCoord.xy + vPosition)) discard;
+						// if(B < rand(gl_FragCoord.xy + vPosition)) discard;
+						float threshold = 0.5; // Adjust this value as needed
+
+                        if (B < threshold) {
+                            // Remove splats with opacity below the threshold
+                            discard;
+                        }
 						gl_FragColor = vec4(vColor.rgb, 1);
 					}
 				`,
