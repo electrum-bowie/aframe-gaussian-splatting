@@ -110,7 +110,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 						f_buffer[8 * i + 3 + 1],
 						f_buffer[8 * i + 3 + 2]
 					);
-					if (scaleValue < 1) {
+					if (scale < 1) {
 						continue; // Skip this splat
 					}
 					let mtx = new THREE.Matrix4();
