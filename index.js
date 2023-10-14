@@ -1,6 +1,6 @@
 AFRAME.registerComponent("gaussian_splatting", {
 	schema: {
-		src: {type: 'string', default: "train.splat"},
+		src: { type: 'string', default: "train.splat" },
 	},
 	init: function () {
 		// aframe-specific data
@@ -9,196 +9,195 @@ AFRAME.registerComponent("gaussian_splatting", {
 		this.loadData(this.data.src, this.el.sceneEl.camera.el.components.camera.camera, this.el.object3D);
 	},
 	// also works from vanilla three.js
-	loadData: function(src, camera, object) {
+	loadData: function (src, camera, object) {
 		this.src = src;
 		this.camera = camera;
 		this.object = object;
 
 		fetch(src)
-		.then(async (data) => {
-			const reader = data.body.getReader();
+			.then(async (data) => {
+				const reader = data.body.getReader();
 
-			let bytesDownloaded = 0;
-			let _totalDownloadBytes = data.headers.get("Content-Length");
-			let totalDownloadBytes = _totalDownloadBytes ? parseInt(_totalDownloadBytes) : undefined;
-			
-			const chunks = [];
-			const start = Date.now();
-			let lastReportedProgress = 0;
+				let bytesDownloaded = 0;
+				let _totalDownloadBytes = data.headers.get("Content-Length");
+				let totalDownloadBytes = _totalDownloadBytes ? parseInt(_totalDownloadBytes) : undefined;
 
-			while (true) {
-				try {
-				  const { value, done } = await reader.read();
-				  if (done) {
-					console.log("Completed download.");
-					break;
-				  }
-				  bytesDownloaded += value.length;
-				  if (totalDownloadBytes != undefined) {
-					const mbps = (bytesDownloaded / 1024 / 1024) / ((Date.now() - start) / 1000);
-					const percent = bytesDownloaded / totalDownloadBytes * 100;
-					if (percent - lastReportedProgress > 1) {
-						console.log("download progress:", percent.toFixed(2) + "%", mbps.toFixed(2) + " Mbps");
-						lastReportedProgress = percent;
-					}
-				  } else {
-					console.log("download progress:", bytesDownloaded, ", unknown total");
-				  }
-				  chunks.push(value);
-				} catch (error) {
-				  console.error(error);
-				  success = false;
-				  break;
-				}
-			  }
+				const chunks = [];
+				const start = Date.now();
+				let lastReportedProgress = 0;
 
-			// Concatenate the chunks into a single Uint8Array
-			const concatenatedChunks = new Uint8Array(
-				chunks.reduce((acc, chunk) => acc + chunk.length, 0)
-			);
-			let offset = 0;
-			for (const chunk of chunks) {
-				concatenatedChunks.set(chunk, offset);
-				offset += chunk.length;
-			}
-
-			return concatenatedChunks.buffer;
-		})
-		.then((buffer) => {
-			let u_buffer = new Uint8Array(buffer);
-			if (
-				u_buffer[0] == 112 &&
-				u_buffer[1] == 108 &&
-				u_buffer[2] == 121 &&
-				u_buffer[3] == 10
-			) {
-				buffer = this.processPlyBuffer(buffer);
-				u_buffer = new Uint8Array(buffer);
-			}
-
-			const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
-			let vertexCount = Math.floor(buffer.byteLength / rowLength);
-			let f_buffer = new Float32Array(buffer);
-
-			if(vertexCount > 4096*4096){
-				console.log("vertexCount limited to 4096*4096", vertexCount);
-				vertexCount = 4096*4096;
-			}
-
-			let matrices = new Float32Array(vertexCount * 16);
-			const centerAndScaleData = new Float32Array(4096 * 4096 * 4);
-			const covAndColorData = new Uint32Array(4096 * 4096 * 4);
-			const covAndColorData_uint8 = new Uint8Array(covAndColorData.buffer);
-			const covAndColorData_int16 = new Int16Array(covAndColorData.buffer);
-			for (let i = 0; i < vertexCount; i++) {
-				let quat = new THREE.Quaternion(
-					(u_buffer[32 * i + 28 + 1] - 128) / 128.0,
-					(u_buffer[32 * i + 28 + 2] - 128) / 128.0,
-					-(u_buffer[32 * i + 28 + 3] - 128) / 128.0,
-					(u_buffer[32 * i + 28 + 0] - 128) / 128.0,
-				);
-				let center = new THREE.Vector3(
-					f_buffer[8 * i + 0],
-					f_buffer[8 * i + 1],
-					-f_buffer[8 * i + 2]
-				);
-				let scale = new THREE.Vector3(
-					f_buffer[8 * i + 3 + 0],
-					f_buffer[8 * i + 3 + 1],
-					f_buffer[8 * i + 3 + 2]
-				);
-
-				let mtx = new THREE.Matrix4();
-				mtx.makeRotationFromQuaternion(quat);
-				mtx.transpose();
-				mtx.scale(scale);
-				let mtx_t = mtx.clone()
-				mtx.transpose();
-				mtx.premultiply(mtx_t);
-				mtx.setPosition(center);
-
-				let cov_indexes = [0, 1, 2, 5, 6, 10];
-				let max_value = 0.0;
-				for(let j = 0; j < cov_indexes.length; j++){
-					if(Math.abs(mtx.elements[cov_indexes[j]]) > max_value){
-						max_value = Math.abs(mtx.elements[cov_indexes[j]]);
+				while (true) {
+					try {
+						const { value, done } = await reader.read();
+						if (done) {
+							console.log("Completed download.");
+							break;
+						}
+						bytesDownloaded += value.length;
+						if (totalDownloadBytes != undefined) {
+							const mbps = (bytesDownloaded / 1024 / 1024) / ((Date.now() - start) / 1000);
+							const percent = bytesDownloaded / totalDownloadBytes * 100;
+							if (percent - lastReportedProgress > 1) {
+								console.log("download progress:", percent.toFixed(2) + "%", mbps.toFixed(2) + " Mbps");
+								lastReportedProgress = percent;
+							}
+						} else {
+							console.log("download progress:", bytesDownloaded, ", unknown total");
+						}
+						chunks.push(value);
+					} catch (error) {
+						console.error(error);
+						success = false;
+						break;
 					}
 				}
 
-				let destOffset = i * 4;
-				centerAndScaleData[destOffset + 0] = center.x;
-				centerAndScaleData[destOffset + 1] = center.y;
-				centerAndScaleData[destOffset + 2] = center.z;
-				centerAndScaleData[destOffset + 3] = max_value / 32767.0;
-
-				destOffset = i * 4 * 2;
-				for(let j = 0; j < cov_indexes.length; j++){
-					covAndColorData_int16[destOffset + j] = parseInt(mtx.elements[cov_indexes[j]] * 32767.0 / max_value);
+				// Concatenate the chunks into a single Uint8Array
+				const concatenatedChunks = new Uint8Array(
+					chunks.reduce((acc, chunk) => acc + chunk.length, 0)
+				);
+				let offset = 0;
+				for (const chunk of chunks) {
+					concatenatedChunks.set(chunk, offset);
+					offset += chunk.length;
 				}
 
-				// RGBA
-				destOffset = (i * 4 + 3) * 4;
-				covAndColorData_uint8[destOffset + 0] = u_buffer[32 * i + 24 + 0];
-				covAndColorData_uint8[destOffset + 1] = u_buffer[32 * i + 24 + 1];
-				covAndColorData_uint8[destOffset + 2] = u_buffer[32 * i + 24 + 2];
-				covAndColorData_uint8[destOffset + 3] = u_buffer[32 * i + 24 + 3];
-
-				// Store scale and transparent to remove splat in sorting process
-				mtx.elements[15] = Math.max(scale.x, scale.y, scale.z) * u_buffer[32 * i + 24 + 3] / 255.0;
-
-				for(let j = 0; j < 16; j++){
-					matrices[i * 16 + j] = mtx.elements[j];
+				return concatenatedChunks.buffer;
+			})
+			.then((buffer) => {
+				let u_buffer = new Uint8Array(buffer);
+				if (
+					u_buffer[0] == 112 &&
+					u_buffer[1] == 108 &&
+					u_buffer[2] == 121 &&
+					u_buffer[3] == 10
+				) {
+					buffer = this.processPlyBuffer(buffer);
+					u_buffer = new Uint8Array(buffer);
 				}
-			}
 
-			const centerAndScaleTexture = new THREE.DataTexture(centerAndScaleData, 4096, 4096, THREE.RGBA, THREE.FloatType);
-			centerAndScaleTexture.needsUpdate = true;
-			const covAndColorTexture = new THREE.DataTexture(covAndColorData, 4096, 4096, THREE.RGBAIntegerFormat, THREE.UnsignedIntType);
-			covAndColorTexture.internalFormat = "RGBA32UI";
-			covAndColorTexture.needsUpdate = true;
+				const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
+				let vertexCount = Math.floor(buffer.byteLength / rowLength);
+				let f_buffer = new Float32Array(buffer);
 
-			let splatIndexArray = new Uint32Array(vertexCount);
-			const visibleSplatIndexes = new Uint32Array(splatIndexArray.length); // Create an array to store visible splats
-			let visibleSplatCount = 0;
-
-			for (let i = 0; i < splatIndexArray.length; i++) {
-				const opacity = covAndColorData_uint8[i * 4 + 3] / 255.0;
-				if (opacity > 0.55) { // Modify this condition based on your desired opacity threshold
-					visibleSplatIndexes[visibleSplatCount] = splatIndexArray[i];
-					visibleSplatCount++;
+				if (vertexCount > 4096 * 4096) {
+					console.log("vertexCount limited to 4096*4096", vertexCount);
+					vertexCount = 4096 * 4096;
 				}
-			}
 
-			// Create a new buffer attribute for the visible splats
-			const visibleSplatIndexesAttr = new THREE.InstancedBufferAttribute(visibleSplatIndexes.slice(0, visibleSplatCount), 1, false);
-			visibleSplatIndexesAttr.setUsage(THREE.DynamicDrawUsage);
+				let matrices = new Float32Array(vertexCount * 16);
+				const centerAndScaleData = new Float32Array(4096 * 4096 * 4);
+				const covAndColorData = new Uint32Array(4096 * 4096 * 4);
+				const covAndColorData_uint8 = new Uint8Array(covAndColorData.buffer);
+				const covAndColorData_int16 = new Int16Array(covAndColorData.buffer);
+				for (let i = 0; i < vertexCount; i++) {
+					let quat = new THREE.Quaternion(
+						(u_buffer[32 * i + 28 + 1] - 128) / 128.0,
+						(u_buffer[32 * i + 28 + 2] - 128) / 128.0,
+						-(u_buffer[32 * i + 28 + 3] - 128) / 128.0,
+						(u_buffer[32 * i + 28 + 0] - 128) / 128.0,
+					);
+					let center = new THREE.Vector3(
+						f_buffer[8 * i + 0],
+						f_buffer[8 * i + 1],
+						-f_buffer[8 * i + 2]
+					);
+					let scale = new THREE.Vector3(
+						f_buffer[8 * i + 3 + 0],
+						f_buffer[8 * i + 3 + 1],
+						f_buffer[8 * i + 3 + 2]
+					);
 
-			const baseGeometry = new THREE.BufferGeometry();
-			const positionsArray = new Float32Array(6 * 3);
-			const positions = new THREE.BufferAttribute(positionsArray, 3);
-			baseGeometry.setAttribute('position', positions);
-			positions.setXYZ(2, -2.0, 2.0, 0.0);
-			positions.setXYZ(1, 2.0, 2.0, 0.0);
-			positions.setXYZ(0, -2.0, -2.0, 0.0);
-			positions.setXYZ(5, -2.0, -2.0, 0.0);
-			positions.setXYZ(4, 2.0, 2.0, 0.0);
-			positions.setXYZ(3, 2.0, -2.0, 0.0);
-			positions.needsUpdate = true;
+					let mtx = new THREE.Matrix4();
+					mtx.makeRotationFromQuaternion(quat);
+					mtx.transpose();
+					mtx.scale(scale);
+					let mtx_t = mtx.clone()
+					mtx.transpose();
+					mtx.premultiply(mtx_t);
+					mtx.setPosition(center);
 
-			const geometry = new THREE.InstancedBufferGeometry().copy(baseGeometry);
-			geometry.setAttribute('splatIndex', visibleSplatIndexesAttr);
-			geometry.instanceCount = vertexCount;
+					let cov_indexes = [0, 1, 2, 5, 6, 10];
+					let max_value = 0.0;
+					for (let j = 0; j < cov_indexes.length; j++) {
+						if (Math.abs(mtx.elements[cov_indexes[j]]) > max_value) {
+							max_value = Math.abs(mtx.elements[cov_indexes[j]]);
+						}
+					}
 
-			const material = new THREE.ShaderMaterial( {
-				uniforms : {
-					viewport: {value: new Float32Array([1980, 1080])}, // Dummy. will be overwritten
-					focal: {value: 1000.0}, // Dummy. will be overwritten
-					centerAndScaleTexture: {value: centerAndScaleTexture},
-					covAndColorTexture: {value: covAndColorTexture},
-					gsProjectionMatrix: {value: this.getProjectionMatrix()},
-					gsModelViewMatrix: {value: this.getModelViewMatrix()},
-				},
-				vertexShader: `
+					let destOffset = i * 4;
+					centerAndScaleData[destOffset + 0] = center.x;
+					centerAndScaleData[destOffset + 1] = center.y;
+					centerAndScaleData[destOffset + 2] = center.z;
+					centerAndScaleData[destOffset + 3] = max_value / 32767.0;
+
+					destOffset = i * 4 * 2;
+					for (let j = 0; j < cov_indexes.length; j++) {
+						covAndColorData_int16[destOffset + j] = parseInt(mtx.elements[cov_indexes[j]] * 32767.0 / max_value);
+					}
+
+					// RGBA
+					destOffset = (i * 4 + 3) * 4;
+					covAndColorData_uint8[destOffset + 0] = u_buffer[32 * i + 24 + 0];
+					covAndColorData_uint8[destOffset + 1] = u_buffer[32 * i + 24 + 1];
+					covAndColorData_uint8[destOffset + 2] = u_buffer[32 * i + 24 + 2];
+					covAndColorData_uint8[destOffset + 3] = u_buffer[32 * i + 24 + 3];
+
+					// Store scale and transparent to remove splat in sorting process
+					mtx.elements[15] = Math.max(scale.x, scale.y, scale.z) * u_buffer[32 * i + 24 + 3] / 255.0;
+
+					for (let j = 0; j < 16; j++) {
+						matrices[i * 16 + j] = mtx.elements[j];
+					}
+				}
+
+				const centerAndScaleTexture = new THREE.DataTexture(centerAndScaleData, 4096, 4096, THREE.RGBA, THREE.FloatType);
+				centerAndScaleTexture.needsUpdate = true;
+				const covAndColorTexture = new THREE.DataTexture(covAndColorData, 4096, 4096, THREE.RGBAIntegerFormat, THREE.UnsignedIntType);
+				covAndColorTexture.internalFormat = "RGBA32UI";
+				covAndColorTexture.needsUpdate = true;
+
+				let splatIndexArray = new Uint32Array(vertexCount);
+				const visibleSplatIndexes = new Uint32Array(splatIndexArray.length); // Create an array to store visible splats
+				let visibleSplatCount = 0;
+
+				for (let i = 0; i < splatIndexArray.length; i++) {
+					const opacity = covAndColorData_uint8[i * 4 + 3] / 255.0;
+					if (opacity > 0.55) { // Modify this condition based on your desired opacity threshold
+						visibleSplatIndexes[visibleSplatCount] = splatIndexArray[i];
+						visibleSplatCount++;
+					}
+				}
+
+				// Create a new buffer attribute for the visible splats
+				const visibleSplatIndexesAttr = new THREE.InstancedBufferAttribute(visibleSplatIndexes.slice(0, visibleSplatCount), 1, false);
+				visibleSplatIndexesAttr.setUsage(THREE.DynamicDrawUsage);
+				const baseGeometry = new THREE.BufferGeometry();
+				const positionsArray = new Float32Array(6 * 3);
+				const positions = new THREE.BufferAttribute(positionsArray, 3);
+				baseGeometry.setAttribute('position', positions);
+				positions.setXYZ(2, -2.0, 2.0, 0.0);
+				positions.setXYZ(1, 2.0, 2.0, 0.0);
+				positions.setXYZ(0, -2.0, -2.0, 0.0);
+				positions.setXYZ(5, -2.0, -2.0, 0.0);
+				positions.setXYZ(4, 2.0, 2.0, 0.0);
+				positions.setXYZ(3, 2.0, -2.0, 0.0);
+				positions.needsUpdate = true;
+
+				const geometry = new THREE.InstancedBufferGeometry().copy(baseGeometry);
+				geometry.setAttribute('splatIndex', visibleSplatIndexesAttr);
+				geometry.instanceCount = vertexCount;
+
+				const material = new THREE.ShaderMaterial({
+					uniforms: {
+						viewport: { value: new Float32Array([1980, 1080]) }, // Dummy. will be overwritten
+						focal: { value: 1000.0 }, // Dummy. will be overwritten
+						centerAndScaleTexture: { value: centerAndScaleTexture },
+						covAndColorTexture: { value: covAndColorTexture },
+						gsProjectionMatrix: { value: this.getProjectionMatrix() },
+						gsModelViewMatrix: { value: this.getModelViewMatrix() },
+					},
+					vertexShader: `
 					precision highp usampler2D;
 
 					out vec4 vColor;
@@ -285,11 +284,11 @@ AFRAME.registerComponent("gaussian_splatting", {
 								+ position.y * v1 / viewport * 2.0, pos2d.z / pos2d.w, 1.0);
 					}
 					`,
-				fragmentShader: `
+					fragmentShader: `
 					in vec4 vColor;
 					in vec2 vPosition;
 
-					const float ALPHA_HASH_SCALE = 0.35; // Derived from trials only, and may be changed.
+					const float ALPHA_HASH_SCALE = 0.1; // Derived from trials only, and may be changed.
 
 					float hash2D( vec2 value ) {
 				
@@ -362,61 +361,61 @@ AFRAME.registerComponent("gaussian_splatting", {
 						gl_FragColor = vec4(vColor.rgb, 1);
 					}
 				`,
-				depthTest : true,
-				depthWrite: false
-			} );
+					depthTest: true,
+					depthWrite: false
+				});
 
-			material.onBeforeRender = ((renderer, scene, camera, geometry, object, group) => {
-				let projectionMatrix = this.getProjectionMatrix(camera);
-				mesh.material.uniforms.gsProjectionMatrix.value = projectionMatrix;
-				mesh.material.uniforms.gsModelViewMatrix.value = this.getModelViewMatrix(camera);
+				material.onBeforeRender = ((renderer, scene, camera, geometry, object, group) => {
+					let projectionMatrix = this.getProjectionMatrix(camera);
+					mesh.material.uniforms.gsProjectionMatrix.value = projectionMatrix;
+					mesh.material.uniforms.gsModelViewMatrix.value = this.getModelViewMatrix(camera);
 
-				let viewport = new THREE.Vector4();
-				renderer.getCurrentViewport(viewport);
-				const focal = (viewport.w / 2.0) * Math.abs(projectionMatrix.elements[5]);
-				material.uniforms.viewport.value[0] = viewport.z;
-				material.uniforms.viewport.value[1] = viewport.w;
-				material.uniforms.focal.value = focal;
-			});
+					let viewport = new THREE.Vector4();
+					renderer.getCurrentViewport(viewport);
+					const focal = (viewport.w / 2.0) * Math.abs(projectionMatrix.elements[5]);
+					material.uniforms.viewport.value[0] = viewport.z;
+					material.uniforms.viewport.value[1] = viewport.w;
+					material.uniforms.focal.value = focal;
+				});
 
-			mesh = new THREE.Mesh(geometry, material, vertexCount);
-			mesh.frustumCulled = false;
-			mesh.visible = false;
-			this.object.add(mesh);
+				mesh = new THREE.Mesh(geometry, material, vertexCount);
+				mesh.frustumCulled = false;
+				mesh.visible = false;
+				this.object.add(mesh);
 
-			this.worker = new Worker(
-				URL.createObjectURL(
-					new Blob(["(", this.createWorker.toString(), ")(self)"], {
-						type: "application/javascript",
-					}),
-				),
-			);
+				this.worker = new Worker(
+					URL.createObjectURL(
+						new Blob(["(", this.createWorker.toString(), ")(self)"], {
+							type: "application/javascript",
+						}),
+					),
+				);
 
-			this.worker.postMessage({
-				matrices:matrices.buffer
-			}, [matrices.buffer]);
+				this.worker.postMessage({
+					matrices: matrices.buffer
+				}, [matrices.buffer]);
 
-			this.worker.onmessage = (e) => {
-				let indexes = new Uint32Array(e.data.sortedIndexes);
-				mesh.geometry.attributes.splatIndex.set(indexes);
-				mesh.geometry.attributes.splatIndex.needsUpdate = true;
-				mesh.geometry.instanceCount = indexes.length;
+				this.worker.onmessage = (e) => {
+					let indexes = new Uint32Array(e.data.sortedIndexes);
+					mesh.geometry.attributes.splatIndex.set(indexes);
+					mesh.geometry.attributes.splatIndex.needsUpdate = true;
+					mesh.geometry.instanceCount = indexes.length;
+					this.sortReady = true;
+					mesh.visible = true;
+				};
 				this.sortReady = true;
-				mesh.visible = true;
-			};
-			this.sortReady = true;
-		});
+			});
 	},
-	tick: function(time, timeDelta) {
-		if(this.sortReady){
+	tick: function (time, timeDelta) {
+		if (this.sortReady) {
 			this.sortReady = false;
 			let camera_mtx = this.getModelViewMatrix().elements;
 			let view = new Float32Array([camera_mtx[2], camera_mtx[6], camera_mtx[10], camera_mtx[14]]);
-			this.worker.postMessage({view}, [view.buffer]);
+			this.worker.postMessage({ view }, [view.buffer]);
 		}
 	},
-	getProjectionMatrix: function(camera) {
-		if(!camera){
+	getProjectionMatrix: function (camera) {
+		if (!camera) {
 			camera = this.camera;
 		}
 		let mtx = camera.projectionMatrix.clone();
@@ -426,8 +425,8 @@ AFRAME.registerComponent("gaussian_splatting", {
 		mtx.elements[7] *= -1;
 		return mtx;
 	},
-	getModelViewMatrix: function(camera) {
-		if(!camera){
+	getModelViewMatrix: function (camera) {
+		if (!camera) {
 			camera = this.camera;
 		}
 		const viewMatrix = camera.matrixWorld.clone();
@@ -450,8 +449,8 @@ AFRAME.registerComponent("gaussian_splatting", {
 	createWorker: function (self) {
 		let matrices;
 
-		const sortSplats = function sortSplats(matrices, view){
-			const vertexCount = matrices.length/16;
+		const sortSplats = function sortSplats(matrices, view) {
+			const vertexCount = matrices.length / 16;
 			let threshold = -0.001;
 
 			let maxDepth = -Infinity;
@@ -463,13 +462,13 @@ AFRAME.registerComponent("gaussian_splatting", {
 			for (let i = 0; i < vertexCount; i++) {
 				// Sign of depth is reversed
 				let depth =
-					( view[0] * matrices[i * 16 + 12] 
-					+ view[1] * matrices[i * 16 + 13]
-					+ view[2] * matrices[i * 16 + 14]
-					+ view[3]);
+					(view[0] * matrices[i * 16 + 12]
+						+ view[1] * matrices[i * 16 + 13]
+						+ view[2] * matrices[i * 16 + 14]
+						+ view[3]);
 
 				// Skip behind of camera and small, transparent splat
-				if(depth < 0 && matrices[i * 16 + 15] > threshold * depth){
+				if (depth < 0 && matrices[i * 16 + 15] > threshold * depth) {
 					depthList[validCount] = depth;
 					validIndexList[validCount] = i;
 					validCount++;
@@ -480,27 +479,27 @@ AFRAME.registerComponent("gaussian_splatting", {
 
 			// This is a 16 bit single-pass counting sort
 			let depthInv = (256 * 256 - 1) / (maxDepth - minDepth);
-			let counts0 = new Uint32Array(256*256);
+			let counts0 = new Uint32Array(256 * 256);
 			for (let i = 0; i < validCount; i++) {
 				sizeList[i] = ((depthList[i] - minDepth) * depthInv) | 0;
 				counts0[sizeList[i]]++;
 			}
-			let starts0 = new Uint32Array(256*256);
-			for (let i = 1; i < 256*256; i++) starts0[i] = starts0[i - 1] + counts0[i - 1];
+			let starts0 = new Uint32Array(256 * 256);
+			for (let i = 1; i < 256 * 256; i++) starts0[i] = starts0[i - 1] + counts0[i - 1];
 			let depthIndex = new Uint32Array(validCount);
 			for (let i = 0; i < validCount; i++) depthIndex[starts0[sizeList[i]]++] = validIndexList[i];
-	
+
 			return depthIndex;
 		};
 
 		self.onmessage = (e) => {
-			if(e.data.matrices){
+			if (e.data.matrices) {
 				matrices = new Float32Array(e.data.matrices);
 			}
-			if(e.data.view){
-				const view = new Float32Array(e.data.view);	
+			if (e.data.view) {
+				const view = new Float32Array(e.data.view);
 				const sortedIndexes = sortSplats(matrices, view);
-				self.postMessage({sortedIndexes}, [sortedIndexes.buffer]);
+				self.postMessage({ sortedIndexes }, [sortedIndexes.buffer]);
 			}
 		};
 	},
@@ -566,7 +565,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				Math.exp(attrs.scale_0) *
 				Math.exp(attrs.scale_1) *
 				Math.exp(attrs.scale_2);
-			const opacity = Math.pow(1 / (1 + Math.exp(-attrs.opacity)), 3);
+			const opacity = 1 / (1 + Math.exp(-attrs.opacity));
 			sizeList[row] = size * opacity;
 		}
 		console.timeEnd("calculate importance");
@@ -603,9 +602,9 @@ AFRAME.registerComponent("gaussian_splatting", {
 			if (types["scale_0"]) {
 				const qlen = Math.sqrt(
 					attrs.rot_0 ** 2 +
-						attrs.rot_1 ** 2 +
-						attrs.rot_2 ** 2 +
-						attrs.rot_3 ** 2,
+					attrs.rot_1 ** 2 +
+					attrs.rot_2 ** 2 +
+					attrs.rot_3 ** 2,
 				);
 
 				rot[0] = (attrs.rot_0 / qlen) * 128 + 128;
@@ -642,7 +641,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				rgba[2] = attrs.blue;
 			}
 			if (types["opacity"]) {
-				rgba[3] = Math.pow((1 / (1 + Math.exp(-attrs.opacity))), 3) * 255; // Adjusted threshold
+				rgba[3] = (1 / (1 + Math.exp(-attrs.opacity))) * 255;
 			} else {
 				rgba[3] = 255;
 			}
