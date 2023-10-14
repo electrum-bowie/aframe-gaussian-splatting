@@ -314,7 +314,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				f_buffer[8 * i + 3 + 2]
 			);
 			// Check if the scale is smaller than the threshold
-			if (Math.max(scale.x, scale.y, scale.z) < 0.1) {
+			if (Math.max(scale.x, scale.y, scale.z) < 0.075) {
 				// Skip processing this splat
 				continue;
 			}
