@@ -91,13 +91,6 @@ AFRAME.registerComponent("gaussian_splatting", {
 				const covAndColorData_uint8 = new Uint8Array(covAndColorData.buffer);
 				const covAndColorData_int16 = new Int16Array(covAndColorData.buffer);
 
-				let averageScale = 0;
-
-				// Calculate the actual average scale
-				averageScale /= vertexCount;
-
-				// Set a threshold for removing splats (half of the average scale)
-				let scaleThreshold = averageScale;
 
 				for (let i = 0; i < vertexCount; i++) {
 
@@ -117,12 +110,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 						f_buffer[8 * i + 3 + 1],
 						f_buffer[8 * i + 3 + 2]
 					);
-					// Calculate the scale of the current splat
-					let scaleValue = scale;
-
-					// Update the average scale
-					averageScale += scaleValue;
-					if (scaleValue < scaleThreshold) {
+					if (scaleValue < 1) {
 						continue; // Skip this splat
 					}
 					let mtx = new THREE.Matrix4();
