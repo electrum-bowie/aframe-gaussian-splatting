@@ -11,14 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (file) {
             const url = URL.createObjectURL(file);
 
-
-            // Create an A-Frame assets item with the URL of the uploaded file
-            const assets = document.querySelector("a-assets");
-            const assetItem = document.createElement("a-asset-item");
-            assetItem.setAttribute("id", "model");
-            assetItem.setAttribute("src", url);
-            assets.appendChild(assetItem);
-
             // Create an A-Frame entity
             const entity = document.createElement("a-entity");
             entity.setAttribute("gaussian_splatting", `src: #model;`);
@@ -26,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
             entity.setAttribute("position", "0 1.5 -2");
 
             // Append the entity to the scene
-            document.querySelector("a-scene").appendChild(entity);
+            document.getElementById("a-scene").appendChild(entity);
 
             // Hide the file input
             fileButton.style.display = "none";
