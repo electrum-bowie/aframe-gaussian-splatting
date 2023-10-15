@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
             entity.setAttribute("position", "0 1.5 -2");
 
             // Append the entity to the scene
-            document.getElementById("a-scene").appendChild(entity);
+            document.querySelector("a-scene").appendChild(entity);
 
             // Hide the file input
             fileButton.style.display = "none";
