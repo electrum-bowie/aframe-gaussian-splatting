@@ -22,6 +22,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Hide the file input
             fileButton.style.display = "none";
+            // Reload the page after a short delay
+            setTimeout(() => {
+                location.reload();
+            }, 1000); // Reload after 1 second (adjust the delay as needed)
         }
     });
 });
