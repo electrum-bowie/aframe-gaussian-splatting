@@ -194,14 +194,20 @@ AFRAME.registerComponent("gaussian_splatting", {
 		this.sortReady = true;
 	},
 	loadData: function (src) {
-		this.loadedVertexCount = 0;
-		this.rowLength = 3 * 4 + 3 * 4 + 4 + 4;
-		this.worker.postMessage({ method: "clear" });
-		const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-		fetch(src)
-			.then(async (data) => {
-				const reader = data.body.getReader();
+    this.loadedVertexCount = 0;
+    this.rowLength = 3 * 4 + 3 * 4 + 4 + 4;
+    this.worker.postMessage({ method: "clear" });
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+	// Check if the source is a blob URL
+    if (src.startsWith("blob:")) {
+        // Create a blob URL object
+        const blobURL = URL.createObjectURL(this.base64toBlob(src));
+        src = blobURL;
+    }
+    
+    fetch(src)
+        .then(async (data) => {
+            const reader = data.body.getReader();
 
 				let bytesDownloaded = 0;
 				let bytesProcesses = 0;
@@ -280,6 +286,16 @@ AFRAME.registerComponent("gaussian_splatting", {
 					this.pushDataBuffer(concatenatedChunks.buffer, Math.floor(concatenatedChunks.byteLength / this.rowLength));
 				}
 			});
+	},
+	// Convert a base64 string to a Blob
+	base64toBlob: function (base64) {
+		var byteString = atob(base64.split(',')[1]);
+		var ab = new ArrayBuffer(byteString.length);
+		var ia = new Uint8Array(ab);
+		for (var i = 0; i < byteString.length; i++) {
+			ia[i] = byteString.charCodeAt(i);
+		}
+		return new Blob([ab], { type: 'application/octet-stream' });
 	},
 	pushDataBuffer: function (buffer, vertexCount) {
 		if (this.loadedVertexCount + vertexCount > 4096 * 4096) {
