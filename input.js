@@ -26,5 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Append the entity to the scene
         document.getElementById("entityContainer").appendChild(entity);
 
+        // Hide the file input
+        fileButton.style.display = "none";
     });
 });
