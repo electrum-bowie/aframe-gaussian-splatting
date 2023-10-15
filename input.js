@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const fileButton = document.getElementById("fileButton");
     const fileInput = document.getElementById("fileInput");
+
+    fileButton.addEventListener("click", () => {
+        fileInput.click();
+    });
 
     fileInput.addEventListener("change", (event) => {
         const file = event.target.files[0];
@@ -7,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Create an A-Frame entity
         const entity = document.createElement("a-entity");
-        entity.setAttribute("gaussian_splatting", `gltf-model: #model;`);
+        entity.setAttribute("gaussian_splatting", `src: #model;`);
         entity.setAttribute("rotation", "0 0 0");
         entity.setAttribute("position", "0 1.5 -2");
 
