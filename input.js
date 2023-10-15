@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Create an A-Frame entity
             const entity = document.createElement("a-entity");
-            entity.setAttribute("gaussian_splatting", `src: #model;`);
+            entity.setAttribute("gaussian_splatting", `src: ${url};`);
             entity.setAttribute("rotation", "0 0 0");
             entity.setAttribute("position", "0 1.5 -2");
 
