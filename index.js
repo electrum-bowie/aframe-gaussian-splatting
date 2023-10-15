@@ -5,7 +5,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 	init: function () {
 		// aframe-specific data
 		this.el.sceneEl.renderer.setPixelRatio(1);
-		this.el.sceneEl.renderer.xr.setFramebufferScaleFactor(0.5);
+		this.el.sceneEl.renderer.xr.setFramebufferScaleFactor(1);
 		this.initGL(this.el.sceneEl.camera.el.components.camera.camera, this.el.object3D, this.el.sceneEl.renderer);
 		this.loadData(this.data.src);
 	},
