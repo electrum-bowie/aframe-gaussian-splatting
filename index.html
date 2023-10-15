@@ -29,9 +29,26 @@
 
         <!-- Add a button to trigger file selection -->
         <button id="fileButton" style="position: relative; z-index: 1;">Select .ply File</button>
-
+        
+        <a-text id="errorText"
+                position="0 -2 -5"
+                align="center"
+                width="6"
+                color="red"></a-text>
     </a-scene>
+    <script>
+        // Function to display error messages
+        function displayError(errorMessage) {
+            const errorTextElement = document.getElementById("errorText");
+            errorTextElement.setAttribute("value", errorMessage);
+        }
 
+        // Listen for unhandled errors
+        window.addEventListener("error", function (event) {
+            const errorMessage = event.message;
+            displayError(errorMessage);
+        });
+    </script>
     <label for="fileInput">Select .ply File:</label>
     <input type="file" id="fileInput" accept=".ply">
 
