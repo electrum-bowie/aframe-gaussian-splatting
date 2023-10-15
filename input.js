@@ -20,6 +20,10 @@ document.addEventListener("DOMContentLoaded", function () {
             // Append the entity to the scene
             document.querySelector("a-scene").appendChild(entity);
 
+            const script = document.createElement("script");
+            script.setAttribute('src', 'index.js'); // Remove double quotes
+            // Append the entity to the scene
+            document.querySelector("head").appendChild(script);
             // Hide the file input
             fileButton.style.display = "none";
         }

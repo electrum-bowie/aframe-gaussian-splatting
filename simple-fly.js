@@ -5,7 +5,7 @@ AFRAME.registerComponent('simple-fly', {
     init: function () {
         this.rightController = null;
         this.isFlying = false;
-
+        this.initialized = false;
         const controllers = document.querySelectorAll('a-entity[oculus-touch-controls]');
         if (controllers.length >= 2) {
             this.rightController = controllers[0]; // Use 0 for the right hand
@@ -29,9 +29,20 @@ AFRAME.registerComponent('simple-fly', {
             this.gaussianSplattingEntity = document.querySelector('[gaussian_splatting]');
 
         }
+
+       
         if (this.gaussianSplattingEntity) {
             if (this.isFlying) {
                 this.fly();
+            }
+            const entity = document.querySelector("a-scene");
+            // Check if the component has already been initialized
+            if (!this.initialized) {
+                // Call the `init` method
+                entity.components["gaussian_splatting"].init();
+
+                // Set the initialized flag to true
+                this.initialized = true;
             }
         }
 

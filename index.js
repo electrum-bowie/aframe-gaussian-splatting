@@ -3,6 +3,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 		src: { type: 'string', default: "train.splat" },
 	},
 	init: function () {
+		this.initialized = false;
 		// aframe-specific data
 		this.el.sceneEl.renderer.setPixelRatio(1);
 		this.el.sceneEl.renderer.xr.setFramebufferScaleFactor(1);
