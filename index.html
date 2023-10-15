@@ -5,6 +5,17 @@
     <script src="index.js"></script>
     <script src="input.js"></script>
     <script src="simple-fly.js"></script> <!-- Include your fly component script -->
+    <style>
+        /* CSS for button */
+        #fileButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            padding: 20px; /* 3 times bigger */
+        }
+    </style>
 </head>
 <body>
     <a-scene renderer="antialias: false" stats>
