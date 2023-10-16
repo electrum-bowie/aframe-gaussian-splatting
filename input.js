@@ -11,23 +11,22 @@ document.addEventListener("DOMContentLoaded", function () {
         if (file) {
             // Check if the selected file is a .zip file
             if (file.name.endsWith('.zip')) {
-                const zip = new JSZip();
+                const reader = new FileReader();
 
-                // Read the zip file
-                zip.loadAsync(file)
-                    .then(function (zip) {
-                        // Get the names of all files in the zip archive
-                        const fileNames = Object.keys(zip.files);
+                reader.onload = async function (event) {
+                    const zip = new JSZip();
+                    const zipData = event.target.result;
 
-                        // Check if there's exactly one file in the archive
-                        if (fileNames.length === 1) {
-                            const firstFileName = fileNames[0];
+                    try {
+                        const zipArchive = await zip.loadAsync(zipData);
 
-                            // Get the contents of the first (and only) file in the archive
-                            zip.files[firstFileName].async("blob")
-                                .then(function (fileData) {
-                                    // Create an object URL for the extracted file
-                                    const url = URL.createObjectURL(fileData);
+                        // Iterate through the files in the ZIP archive
+                        zipArchive.forEach((relativePath, zipEntry) => {
+                            if (!zipEntry.dir) {
+                                // Assuming you want to use the first non-directory file found
+                                const fileData = zipEntry.async("blob");
+                                fileData.then(function (content) {
+                                    const url = URL.createObjectURL(content);
 
                                     // Create an A-Frame entity
                                     const entity = document.createElement("a-entity");
@@ -41,10 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
                                     // Hide the file input
                                     fileButton.style.display = "none";
                                 });
-                        } else {
-                            alert("The .zip file should contain exactly one file.");
-                        }
-                    });
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Error loading ZIP file:", error);
+                    }
+                };
+
+                reader.readAsArrayBuffer(file);
             } else {
                 alert("Please select a .zip file.");
             }
