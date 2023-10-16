@@ -280,7 +280,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 					this.pushDataBuffer(concatenatedChunks.buffer, Math.floor(concatenatedChunks.byteLength / this.rowLength));
 				}
 			});
-	},
+	}, 
 	pushDataBuffer: function (buffer, vertexCount) {
 		if (this.loadedVertexCount + vertexCount > 4096 * 4096) {
 			console.log("vertexCount limited to 4096*4096", vertexCount);
@@ -289,7 +289,12 @@ AFRAME.registerComponent("gaussian_splatting", {
 		if (vertexCount <= 0) {
 			return;
 		}
-		vertexCount = vertexCount / 3.5;
+		const sliderValue = document.getElementById("slider");
+
+		vertexCount = vertexCount / sliderValue.value;
+
+		slider.style.display = 'none';
+
 		let u_buffer = new Uint8Array(buffer);
 		let f_buffer = new Float32Array(buffer);
 		let matrices = new Float32Array(vertexCount * 16);

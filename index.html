@@ -5,7 +5,7 @@
     <script src="index.js"></script>
     <script src="input.js"></script>
     <script src="simple-fly.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="dist/jszip.js"></script>
     <style>
         /* CSS for button */
         #fileButton {
@@ -15,6 +15,32 @@
             transform: translate(-50%, -50%);
             z-index: 1;
             padding: 20px; /* 3 times bigger */
+        }
+        /* CSS for slider container */
+        .slider-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%; /* Adjust the width as needed */
+            z-index: 1;
+        }
+
+        /* CSS for the slider input */
+        #slider {
+            width: 100%;
+        }
+
+        /* CSS for the displayed value */
+        #slider-value {
+            text-align: center;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            width: 60px; /* Adjust the width as needed */
+            margin: 0 auto;
         }
 
         #logMessage {
@@ -42,6 +68,10 @@
 
         <!-- Add a button to trigger file selection -->
         <button id="fileButton" style="position: relative; z-index: 1;">Select .zip File</button>
+        <div class="slider-container">
+            <input type="range" min="1.5" max="3.5" step="0.1" value="3" id="slider">
+            <span id="slider-value">3</span>
+        </div>
 
         <!-- Display the most recent error message -->
         <div id="logMessage"></div>
@@ -74,6 +104,17 @@
             origConsoleError.apply(console, args);
             displayLogMessage(args.join(' '));
         };
+
+        // Function to update the slider value
+        function updateSliderValue() {
+            const slider = document.getElementById('slider');
+            const sliderValue = document.getElementById('slider-value');
+            sliderValue.innerText = slider.value;
+        }
+
+        // Add an event listener to the slider input element
+        const slider = document.getElementById('slider');
+        slider.addEventListener('input', updateSliderValue);
     </script>
 </body>
 </html>

@@ -24,7 +24,6 @@ AFRAME.registerComponent('simple-fly', {
     tick: function () {
         
         if (!this.gaussianSplattingEntity) {
-            console.warn('No Gaussian Splatting entity found.');
 
             this.gaussianSplattingEntity = document.querySelector('[gaussian_splatting]');
 
