@@ -72,17 +72,6 @@
             origConsoleError.apply(console, args);
             displayLogMessage(args.join(' '));
         };
-
-        // Function to update the slider value
-        function updateSliderValue() {
-            const slider = document.getElementById('slider');
-            const sliderValue = document.getElementById('slider-value');
-            sliderValue.innerText = slider.value;
-        }
-
-        // Add an event listener to the slider input element
-        const slider = document.getElementById('slider');
-        slider.addEventListener('input', updateSliderValue);
     </script>
 </body>
 </html>
