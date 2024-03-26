@@ -1,3 +1,24 @@
+<<<<<<< HEAD
+=======
+async function readExportedPly(file) {
+    const zipper = new JSZip();
+    const unzippedFiles = await zipper.loadAsync(file);
+
+    // Iterate through the unzipped files
+    for (const fileName in unzippedFiles.files) {
+        const unzippedFile = unzippedFiles.files[fileName];
+        console.warn("Please Wait. (Estimated 60s)");
+
+        // Generate a Blob for the .ply file
+        const blob = await unzippedFile.async("blob");
+
+        // Create a URL for the Blob
+        const url = URL.createObjectURL(blob);
+        return url;
+    }
+    return Promise.reject('No .ply file was found');
+}
+>>>>>>> parent of 72b6cf0 (Update input.js)
 document.addEventListener("DOMContentLoaded", function () {
     const fileButton = document.getElementById("fileButton");
     const fileInput = document.getElementById("fileInput");
