@@ -5,7 +5,6 @@
     <script src="index.js"></script>
     <script src="input.js"></script>
     <script src="simple-fly.js"></script>
-    <script src="dist/jszip.js"></script>
     <style>
         /* CSS for button */
         #fileButton {
@@ -40,13 +39,13 @@
         <a-entity oculus-touch-controls="hand: right" simple-fly="speed: -0.025"></a-entity>
 
         <!-- Add a button to trigger file selection -->
-        <button id="fileButton" style="position: relative; z-index: 1;">Select .zip File</button>
+        <button id="fileButton" style="position: relative; z-index: 1;">Select .ply File</button>
         <!-- Display the most recent error message -->
         <div id="logMessage"></div>
     </a-scene>
 
     <label for="fileInput">Select .ply File:</label>
-    <input type="file" id="fileInput" accept=".zip">
+    <input type="file" id="fileInput" accept=".ply">
     <script>
         function displayLogMessage(message) {
             const logMessageElement = document.getElementById('logMessage');
