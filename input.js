@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 async function readExportedPly(file) {
     const zipper = new JSZip();
     const unzippedFiles = await zipper.loadAsync(file);
@@ -18,29 +16,27 @@ async function readExportedPly(file) {
     }
     return Promise.reject('No .ply file was found');
 }
->>>>>>> parent of 72b6cf0 (Update input.js)
 document.addEventListener("DOMContentLoaded", function () {
     const fileButton = document.getElementById("fileButton");
     const fileInput = document.getElementById("fileInput");
-
     fileButton.addEventListener("click", () => {
         fileInput.click();
     });
-
-    fileInput.addEventListener("change", (event) => {
+    fileInput.addEventListener("change", async (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Create an A-Frame entity
-            const entity = document.createElement("a-entity");
-            entity.setAttribute("gaussian_splatting", `src: ${file};`);
-            entity.setAttribute("rotation", `0 0 0`);
-            entity.setAttribute("position", `0 1.5 -2`);
-
-            // Append the entity to the scene
-            document.querySelector("a-scene").appendChild(entity);
-
-            // Hide the file input
-            fileButton.style.display = "none";
+            try {
+                const url = await readExportedPly(file);
+                // Create an A-Frame entity
+                const entity = document.createElement("a-entity");
+                entity.setAttribute("gaussian_splatting", `src: ${url};`);
+                entity.setAttribute("rotation", `0 0 0`);
+                entity.setAttribute("position", `0 1.5 -2`);
+                document.querySelector("a-scene").appendChild(entity);
+                fileButton.style.display = "none";
+            } catch (error) {
+                alert("Error: " + error);
+            }
         }
     });
 });
