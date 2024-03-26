@@ -254,7 +254,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 			const chunks = [];
 			const start = Date.now();
 			let lastReportedProgress = 0;
-			let isPly = src.endsWith(".ply");
+			let isPly = true;
 
 			while (true) {
 				try {
