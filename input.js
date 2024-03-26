@@ -1,6 +1,7 @@
 async function readExportedPly(file) {
     const zipper = new JSZip();
     const unzippedFiles = await zipper.loadAsync(file);
+    let url = null;
 
     // Iterate through the unzipped files
     for (const fileName in unzippedFiles.files) {
@@ -11,11 +12,16 @@ async function readExportedPly(file) {
         const blob = await unzippedFile.async("blob");
 
         // Create a URL for the Blob
-        const url = URL.createObjectURL(blob);
-        return url;
+        url = URL.createObjectURL(blob);
     }
-    return Promise.reject('No .ply file was found');
+
+    if (url) {
+        return url;
+    } else {
+        return Promise.reject('No .ply file was found');
+    }
 }
+
 document.addEventListener("DOMContentLoaded", function () {
     const fileButton = document.getElementById("fileButton");
     const fileInput = document.getElementById("fileInput");
