@@ -323,10 +323,10 @@ AFRAME.registerComponent("gaussian_splatting", {
 				// Skip processing this splat
 				continue;
 			}
-                        if (Math.max(scale.x, scale.y, scale.z) < 0.002) {
+                        //if (Math.max(scale.x, scale.y, scale.z) < 0.002) {
 				// Skip processing this splat
-				continue;
-			}
+				//continue;
+			//}
 			let mtx = new THREE.Matrix4();
 			mtx.makeRotationFromQuaternion(quat);
 			mtx.transpose();
