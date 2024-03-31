@@ -323,7 +323,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 				// Skip processing this splat
 				continue;
 			}
-                        if (Math.max(scale.x, scale.y, scale.z) < 0.0007) {
+                        if (Math.max(scale.x, scale.y, scale.z) < 0.0008) {
 				// Skip processing this splat
 				continue;
 			}
