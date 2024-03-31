@@ -217,7 +217,7 @@ AFRAME.registerComponent("gaussian_splatting", {
 					try {
 						const { value, done } = await reader.read();
 						if (done) {
-							console.log("Completed download.");
+							console.log("Process Completed.");
 							break;
 						}
 						bytesDownloaded += value.length;
